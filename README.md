@@ -1,7 +1,7 @@
 phpshopzoekerexamplecode
 ==============
 
-This code is a minisite writen in php with searchfunctionality on the Open API. It is a simple way to get a quick working example with html output and parsing of the xml respons. You can view the example live at http://developers.bol.com/voorbeeldcode/shopzoeker.php
+This code is a minisite writen in php with searchfunctionality on the Open API. It is a simple way to get a quick working example with html output and parsing of the xml respons. You can view the example live at http://developers.bol.com/examples/phpexamplecodeshopzoeker/index.php
 
 If you want to contribute to this code sample. You can do a Fork and a Pull request on this repo.
 
