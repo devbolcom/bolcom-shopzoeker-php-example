@@ -9,7 +9,7 @@
         <link rel="stylesheet" href="css/base/jquery.ui.all.css">
 
         <script type="text/javascript" src="js/jquery-1.4.4.js"></script>
-        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
         <script type="text/javascript" src="js/jquery.multiselect.js"></script>
 
         <script>
@@ -191,7 +191,7 @@
             }
 
             .pricebol .listprice {
-                color: #9ACCFF;
+                color: #FFF;
                 font-size: 10px;
                 text-decoration: line-through;
                 height: 10px;
@@ -296,9 +296,9 @@
         // No rights may be derived from this codesample
         // Any questions? Check out the API documentation at http://developers.bol.com
 
-        $server = 'openapi.bol.com';
+        $server = 'api.bol.com';
         $port = '443';
-
+        $apikey = 'your api key here';
         // Set keyword
         if ($_GET['keyword'] != "") {
             $keyword = $_GET['keyword'];
@@ -310,58 +310,24 @@
         // Clear results
         $output = '';
 
-        // Sign your request with HMAC SHA-256, see documentation for more info on this
-        function getSignature($date, $httpMethod, $url, $contentType, $queryParams) {
-            $signature = $httpMethod . "\n\n";
-            $signature .= $contentType . "\n";
-            $signature .= $date . "\n";
-            $signature .= "x-openapi-date:" . $date . "\n";
-            if (!is_null($sessionId)) {
-                $signature .= "x-openapi-session-id:" . $sessionId . "\n";
-            }
-            $signature .= $url . "\n";
-
-            if ($queryParams != "") {
-                $parametersArray = explode("&", $queryParams);
-                if (count($parametersArray) > 0) {
-                    $parametersArray[0] = substr($parametersArray[0], 1, strlen($parametersArray[0]));
-                }
-                sort($parametersArray);
-
-                $arrayLength = count($parametersArray);
-                for ($i = 0; $i < $arrayLength; $i++) {
-                    if ($i < $arrayLength - 1) {
-                        $signature .= "&" . urldecode($parametersArray[$i]) . "\n";
-                    } else {
-                        $signature .= "&" . urldecode($parametersArray[$i]);
-                    }
-                }
-            }
-            // Place your keys here
-			$publicKey = 'the short one';
-			$privateKey = 'the long one';
-            return $publicKey . ':' . base64_encode(hash_hmac('SHA256', $signature, $privateKey, true));
-        }
-
-        function doRequest($method, $server, $port, $url, $parameters, $content, $sessionId) {
+        function doRequest($httpMethod, $server, $port, $url, $parameters, $content, $sessionId) {
 
             $server = 'openapi.bol.com';
             $port = '443';
 
             $today = gmdate('D, d F Y H:i:s \G\M\T');
 
-            if ($method == 'GET') {
+            if ($httpMethod == 'GET') {
                 $contentType = 'application/xml';
-            } elseif ($method == 'POST') {
+            } elseif ($httpMethod == 'POST') {
                 $contentType = 'application/x-www-form-urlencoded';
             }
 
-            $headers = $method . " " . $url . $parameters . " HTTP/1.0\r\nContent-type: " . $contentType . "\r\n";
+            $headers = $httpMethod . " " . $url . $parameters . " HTTP/1.0\r\n";
+            $headers .= "Content-type: " . $contentType . "\r\n";
             $headers .= "Host: " . $server . "\r\n";
             $headers .= "Content-length: " . strlen($content) . "\r\n";
             $headers .= "Connection: close\r\n";
-            $headers .= "X-OpenAPI-Authorization: " . getSignature($today, $method, $url, $contentType, $parameters) . "\r\n";
-            $headers .= "X-OpenAPI-Date: " . $today . "\r\n";
             if (!is_null($sessionId)) {
                 $headers .= "X-OpenAPI-Session-ID: " . $sessionId . "\r\n";
             }
@@ -414,7 +380,7 @@
   <option value="3132">Muziek</option>';
 
         // Build the request to the API
-        $output .= doRequest('GET', $server, $port, '/openapi/services/rest/catalog/v3/searchresults', '?term=' . urlencode($keyword) . '&offset=0&nrProducts=8&includeProducts=true&includeCategories=true&includeRefinements=false&categoryId=' . urlencode($category_id), '', null);
+        $output .= doRequest('GET', $server, $port, '/catalog/v4/search', '?q=' . urlencode($keyword) . '&apikey=' . $apikey . '&format=xml&offset=0&nrProducts=8&includeattributes=true&dataoutput=categories,refinements,products&ids=' . urlencode($category_id), '', null);
 
         // Check for the right http status in the API respons
         if (substr_count($output, "200 OK") > 0) {
@@ -424,11 +390,11 @@
             // Simplexml magic
             $phpobject = simplexml_load_string($xml);
 
-            $totalresults = $phpobject -> TotalResultSize;
+            $totalresults = $phpobject->TotalResultSize;
             $summary = 'Aantal resultaten: ' . $totalresults . '<br />';
             $i = 0;
             // First get the categories
-            foreach ($phpobject->Category as $category) {
+            foreach ($phpobject->Categories as $category) {
                 $i++;
                 $categoryid = $category -> Id;
                 $categoryname = $category -> Name;
@@ -447,11 +413,11 @@
             $number = 0;
 
             // Get the products
-            foreach ($phpobject->Product as $item) {
-
+            foreach ($phpobject->Products as $item) {
+                
                 $id = $item -> Id;
                 $section = $item -> Section;
-                $thumbnailurl = $item -> Images -> Large;
+                $thumbnailurl =  preg_replace("/^http:/i", "https:", $item -> Images[1]-> Url);
                 $title = $item -> Title;
                 $description = $item -> ShortDescription;
                 $availabilitycode = $item -> AvailabilityCode;
@@ -460,8 +426,8 @@
                 $rating = $item -> Rating;
 
                 // The first offer is always a bol.com offer (unless this product is only sold by 2ndhand or plaza partners
-                $price = doubleval($item -> Offers -> Offer[0] -> Price);
-                $listprice = doubleval($item -> Offers -> Offer[0] -> ListPrice);
+                $price = doubleval($item -> OfferData -> Offers[0] -> Price);
+                $listprice = doubleval($item -> OfferData -> Offers[0] -> ListPrice);
                 $ean = $item -> Ean;
                 $externalurl = $item -> Urls -> Main;
                 $totalresultsize = $item -> TotalResultSize;
@@ -530,7 +496,7 @@
                 // Build the desired HTML code for each productitem and append it to $results
                 $resultlist .= '<li class="more" id="' . $number . '"><a class="product" href="' . $externalurl . '"><span class="imageBox"><img alt="' . $title . '" src="' . $thumbnailurl . '"><div class="pricebol two_digits">' . $listpricediv . '<div class="newprice">' . $firstprice . '';
                 $resultlist .= ','; 
-                if($secondprice == '') $secondprice = '00';
+                if($secondprice == '') $secondprice = '00'; 
                 $resultlist .= '</div><sup>' . $secondprice . '</sup></div></span><span class="productName">' . $title . '</span>' . $ratingspan . '<span class="sectionName">' . $section . '</span><span>' . $speclist . '</span></a></li>';
             }
             // End of statuscode 200
