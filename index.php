@@ -292,7 +292,7 @@
     <body>
         <?php
         //Requires: extension=php_openssl.dll in php.ini
-        // Based on bol.com REST API version 3.0
+        // Based on bol.com REST API version 4.0
         // No rights may be derived from this codesample
         // Any questions? Check out the API documentation at http://developers.bol.com
 
