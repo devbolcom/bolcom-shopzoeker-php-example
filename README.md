@@ -13,5 +13,5 @@ Installation and running the application:
 ------------------------------------
 1. Get the code by forking or downloading the zip
 2. Upload all files (keep the directory structure) to a web-server
-3. Add your AccessKeyID and SecretAccessKey at line 353 and 354 of shopzoeker.php (request this key and secret at https://developers.bol.com/inloggen/?action=register)
-4. Open the browser and call the URL where your shopzoeker.php file is located
+3. Add your API-key at line 301 of index.php (request this key https://developers.bol.com/)
+4. Open the browser and call the URL where your index.php file is located
