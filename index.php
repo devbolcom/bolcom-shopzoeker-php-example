@@ -4,6 +4,9 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
         <title>PHP sample bol.com API</title>
+
+        <meta name="robots" content="nofollow" />
+        
         <link rel="stylesheet" type="text/css" href="css/multiselect.css">
 
         <link rel="stylesheet" href="css/base/jquery.ui.all.css">
@@ -429,7 +432,7 @@
                 $price = doubleval($item -> OfferData -> Offers[0] -> Price);
                 $listprice = doubleval($item -> OfferData -> Offers[0] -> ListPrice);
                 $ean = $item -> Ean;
-                $externalurl = $item -> Urls -> Main;
+                $externalurl = $item -> Urls[0] -> Value;
                 $totalresultsize = $item -> TotalResultSize;
                 $number++;
                 // $speclist will hold the allowed specs
@@ -494,7 +497,7 @@
                 }
 
                 // Build the desired HTML code for each productitem and append it to $results
-                $resultlist .= '<li class="more" id="' . $number . '"><a class="product" href="' . $externalurl . '"><span class="imageBox"><img alt="' . $title . '" src="' . $thumbnailurl . '"><div class="pricebol two_digits">' . $listpricediv . '<div class="newprice">' . $firstprice . '';
+                $resultlist .= '<li class="more" id="' . $number . '"><a class="product" href="' . $externalurl . '" target="_blank"><span class="imageBox"><img alt="' . $title . '" src="' . $thumbnailurl . '"><div class="pricebol two_digits">' . $listpricediv . '<div class="newprice">' . $firstprice . '';
                 $resultlist .= ','; 
                 if($secondprice == '') $secondprice = '00'; 
                 $resultlist .= '</div><sup>' . $secondprice . '</sup></div></span><span class="productName">' . $title . '</span>' . $ratingspan . '<span class="sectionName">' . $section . '</span><span>' . $speclist . '</span></a></li>';
