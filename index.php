@@ -6,13 +6,12 @@
         <title>PHP sample bol.com API</title>
 
         <meta name="robots" content="nofollow" />
-        
+
         <link rel="stylesheet" type="text/css" href="css/multiselect.css">
+        <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
 
-        <link rel="stylesheet" href="css/base/jquery.ui.all.css">
-
-        <script type="text/javascript" src="js/jquery-1.4.4.js"></script>
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
         <script type="text/javascript" src="js/jquery.multiselect.js"></script>
 
         <script>
@@ -304,7 +303,7 @@
         $apikey = 'your api key here';
         // Set keyword
         if ($_GET['keyword'] != "") {
-            $keyword = $_GET['keyword'];
+            $keyword = htmlspecialchars($_GET['keyword']);
         } else {
             $keyword = 'potter';
         }
@@ -355,7 +354,7 @@
         }
 
         if (isset($_GET['id'])) {
-            $category_id = $_GET['id'];
+            $category_id = htmlspecialchars($_GET['id']);
         } else {
             $category_id = 0;
         }
@@ -365,7 +364,7 @@
             $parent_id = $category_id;
         }
         if (isset($_GET['parent_id'])) {
-            $parent_id = $_GET['parent_id'];
+            $parent_id = htmlspecialchars($_GET['parent_id']);
         }
         if ($_GET['parent_id'] == 0) {
             $parent_id = $category_id;
@@ -373,14 +372,14 @@
 
         // Dropdown categories
         $selectlist = '
-  <option value="0" selected="selected">Alle artikelen</option>
-  <option value="8299">Boeken</option>
-  <option value="3133">Dvd</option>
-  <option value="3135">Games</option>
-  <option value="3136">Elektronica</option>
-  <option value="3134">Computer</option>
-  <option value="7934">Speelgoed</option>
-  <option value="3132">Muziek</option>';
+        <option value="0" selected="selected">Alle artikelen</option>
+        <option value="8299">Boeken</option>
+        <option value="3133">Dvd</option>
+        <option value="3135">Games</option>
+        <option value="3136">Elektronica</option>
+        <option value="3134">Computer</option>
+        <option value="7934">Speelgoed</option>
+        <option value="3132">Muziek</option>';
 
         // Build the request to the API
         $output .= doRequest('GET', $server, $port, '/catalog/v4/search', '?q=' . urlencode($keyword) . '&apikey=' . $apikey . '&format=xml&offset=0&nrProducts=8&includeattributes=true&dataoutput=categories,refinements,products&ids=' . urlencode($category_id), '', null);
@@ -417,7 +416,7 @@
 
             // Get the products
             foreach ($phpobject->Products as $item) {
-                
+
                 $id = $item -> Id;
                 $section = $item -> Section;
                 $thumbnailurl =  preg_replace("/^http:/i", "https:", $item -> Images[1]-> Url);
@@ -498,8 +497,8 @@
 
                 // Build the desired HTML code for each productitem and append it to $results
                 $resultlist .= '<li class="more" id="' . $number . '"><a class="product" href="' . $externalurl . '" target="_blank"><span class="imageBox"><img alt="' . $title . '" src="' . $thumbnailurl . '"><div class="pricebol two_digits">' . $listpricediv . '<div class="newprice">' . $firstprice . '';
-                $resultlist .= ','; 
-                if($secondprice == '') $secondprice = '00'; 
+                $resultlist .= ',';
+                if($secondprice == '') $secondprice = '00';
                 $resultlist .= '</div><sup>' . $secondprice . '</sup></div></span><span class="productName">' . $title . '</span>' . $ratingspan . '<span class="sectionName">' . $section . '</span><span>' . $speclist . '</span></a></li>';
             }
             // End of statuscode 200
@@ -512,28 +511,26 @@
 
         // Buils the page
         $results = '<div class="result">
-  <a title="Shopzoeker" href="' . htmlentities($_SERVER['PHP_SELF']) . '" id="logo">
-  <img title="Shopzoeker" alt="Shopzoeker" src="images/shopzoek.jpg">
-  </a>
-  <div id="topbar">
-	<div id="searchwrapper">
-  <form action="' . htmlentities($_SERVER['PHP_SELF']) . '">
-  <input type="text" class="searchbox" name="keyword" value="' . $keyword . '" onclick="clearText(this)" />
-  <input type="image" src="images/searchsubmit.gif" class="searchbox_submit" value="" />
-  <span class="niceselect">
-	<select title="id" multiple="multiple" name="id" size="7">
-	' . $selectlist . '
-  </select> 
-  </span>
-  </form>   
-  </div>
-  ' . $keywordtext . '
-  </div>';
+        <a title="Shopzoeker" href="' . htmlentities($_SERVER['PHP_SELF']) . '" id="logo">
+        <img title="Shopzoeker" alt="Shopzoeker" src="images/shopzoek.jpg">
+        </a>
+        <div id="topbar">
+      	<div id="searchwrapper">
+        <form action="' . htmlentities($_SERVER['PHP_SELF']) . '">
+        <input type="text" class="searchbox" name="keyword" value="' . $keyword . '" onclick="clearText(this)" />
+        <input type="image" src="images/searchsubmit.gif" class="searchbox_submit" value="" />
+        <span class="niceselect">
+      	<select title="id" multiple="multiple" name="id" size="7">
+      	' . $selectlist . '
+        </select>
+        </span>
+        </form>
+        </div>
+        ' . $keywordtext . '
+        </div>';
 
         // Add summary and categories
-        $results .= '<div class="categorylist">
-  ' . $summary . '
-  <ul>';
+        $results .= '<div class="categorylist">' . $summary . '<ul>';
         $results .= $catlist;
         $results .= '</ul></div>';
 
